@@ -1,0 +1,17 @@
+{
+  "name": "content-explorer-server",
+  "version": "0.1.0",
+  "license": "MIT",
+  "homepage": "https://frantracer.github.io/content-explorer/",
+  "devDependencies": {},
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "cors": "^2.8.5",
+    "express": "^4.16.4",
+    "helmet": "^3.15.1",
+    "nodemon": "^1.18.10"
+  },
+  "scripts": {
+    "start": "nodemon src/app.js"
+  }
+}
