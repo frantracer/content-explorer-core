@@ -21,17 +21,3 @@ Launch container
 The API will be available at:
 
 http://localhost:3000/api
-
-# Production environment
-
-Launch container
-
-`docker start -i content-explorer-core`
-
-Deploy the project in github.io
-
-`npm run deploy`
-
-The web will be available at:
-
-https://frantracer.github.io/content-explorer-core/
