@@ -19,10 +19,10 @@ function login(req, res, next) {
 }
 
 function getAllContentmarksByUser(req, res, next) {
-  user = userC.getUserBySid(req.body.sid);
+  user = userC.getUserBySid(req.headers.sid);
   if(user != null) {
     contentmarks = contenmarkC.getAllContentmarksByUser(user);
-    res.status(200).send({contentmarks: contentmarks});
+    res.status(200).send({items: contentmarks});
   } else {
     res.status(401).send({error: 'Invalid credentials'});
   }
