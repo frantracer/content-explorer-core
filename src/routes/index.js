@@ -1,39 +1,74 @@
+const dotenv = require('dotenv');
+dotenv.config();
+
 const contenmarkC = require('../controllers/contentmark')
 const userC = require('../controllers/user')
+const authC = require('../controllers/auth')
+
+// ENDPOINTS DEFINITION
 
 module.exports = (router) => {
-  router.route('/login').get(login),
+  router.route('/login').post(login),
 
-  router.route('/contentmarks').get(getAllContentmarksByUser),
-  router.route('/contentmarks/:id').get(getSingleContentmarkByUser),
+  router.route('/contentmarks').get(getContentmarks),
+  router.route('/contentmarks/:id').get(foo),
   router.route('/contentmarks/:id').delete(foo),
   router.route('/contentmarks/:id').put(foo),
 
   router.route('/contentmarks/:id/feeds').get(foo)
 }
 
-// ROUTE FUNCTIONS
+// COMMON FUNCTIONS
 
-function login(req, res, next) {
-  res.status(200).send({sid: 'sid'});
-}
-
-function getAllContentmarksByUser(req, res, next) {
-  user = userC.getUserBySid(req.headers.sid);
-  if(user != null) {
-    contentmarks = contenmarkC.getAllContentmarksByUser(user);
-    res.status(200).send({items: contentmarks});
+function sendResponse(error, data, res) {
+  if(error) {
+    res.status(error.code).send(error.message)
+    console.error(error.message + " : " + error.code + " -> " + error.description)
   } else {
-    res.status(401).send({error: 'Invalid credentials'});
+    res.status(200).send(data)
   }
 }
 
-function getSingleContentmarkByUser(req, res, next) {
-  res.status(200).send({foo: 'foo'});
+function filterUserProfile(user) {
+  return filteredUser = {
+    name: user.name,
+    sid: user.sid,
+    picture_url: user.picture_url
+  }
 }
 
 function foo(req, res, next) {
   res.status(200).send({foo: 'foo'});
 }
 
-// COMMON FUNCTIONS
+// ROUTE FUNCTIONS
+
+function login(req, res, next) {
+  if(req.body.sid) {
+    userC.getUserBySid(req.headers.sid, (error, user) => {
+      sendResponse(error, filterUserProfile(user), res)
+    })
+  } else if (req.body.code) {
+    authC.validateGoogleCode(req.body.code, (error, user) => {
+      sendResponse(error, filterUserProfile(user), res)
+    })
+  }
+}
+
+function getContentmarks(req, res, next) {
+  userC.getUserBySid(req.headers.sid, (error, user) => {
+    if(error) {
+      sendResponse(error, null, res)
+    } else if(user != null) {
+      contenmarkC.getAllContentmarksByUser(user, (error, contentmarks) => {
+        sendResponse(error, {items: contentmarks}, res)
+      });
+    } else {
+      sendResponse(new CustomError("User not found"), null, res)
+    }
+  })
+}
+
+function getSingleContentmarkByUser(req, res, next) {
+  res.status(200).send({foo: 'foo'});
+}

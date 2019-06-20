@@ -1,5 +1,5 @@
 module.exports = {
-  getAllContentmarksByUser: function (user) {
+  getAllContentmarksByUser: function (user, callback) {
     contentmarks = [
       {
         id: "1",
@@ -76,6 +76,7 @@ module.exports = {
         ]
       }
     ];
-    return contentmarks;
+
+    callback(null, contentmarks);
   }
 }
