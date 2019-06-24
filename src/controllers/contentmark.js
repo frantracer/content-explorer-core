@@ -15,20 +15,24 @@ const youtube = google.youtube('v3')
 
 module.exports = {
   getAllContentmarksByUser: function (user, callback) {
-    getSubscriptions(user).then((subscriptions) => {
+    getSubscriptions(user)
+    .then((subscriptions) => {
       Promise.all(subscriptions.map((subscription) => {
         return getFeeds(subscription).then((feeds) => {
-          return {
-            ...subscription,
-            ...{"feeds": feeds}
-          }
+          return feeds.map((feed) => {
+            return { ...feed, "source": subscription}
+          })
         })
-      })).then((subscriptions) => {
+      }))
+      .then((feedsBySubs) => {
+        var feeds = [].concat.apply([], feedsBySubs)
+        feeds.sort((a, b) => { return b.date - a.date })
+
         contentmarks = [
           {
             id: "1",
             name: "Uncategorized",
-            resources: subscriptions
+            feeds: feeds
           }
         ]
         callback(null, contentmarks);
@@ -89,7 +93,7 @@ const getFeeds = (subscription) => {
         type: "youtube",
         link: "https://www.youtube.com/embed/" + item.snippet.resourceId.videoId,
         title: item.snippet.title,
-        date: item.snippet.publishedAt
+        date: new Date(item.snippet.publishedAt)
       }
     })
   })
@@ -101,74 +105,86 @@ const contentmarks_sample = [
   {
     id: "1",
     name: "Videogames",
-    resources: [
+    feeds: [
       {
-        name: "DayoScript",
         type: "youtube",
-        link: "https://www.youtube.com/channel/UCVBkwO6Ok1De0UfNZdo7-Ag",
-        info: {
-          lastUpdate: ""
-        },
-        feeds: [
-          {
-            name: "¿Importa la dificultad en el videojuego? - Post Script",
-            link: "https://www.youtube.com/embed/rnglNZZGh-s"
+        title: "¿Importa la dificultad en el videojuego? - Post Script",
+        link: "https://www.youtube.com/embed/rnglNZZGh-s",
+        date: new Date("2019-04-17T00:00:00Z"),
+        last_update: new Date(),
+        source: {
+          name: "DayoScript",
+          type: "youtube",
+          link: "https://www.youtube.com/channel/UCVBkwO6Ok1De0UfNZdo7-Ag",
+          last_update: new Date(),
+          info: {
+            playlist_id: "UUVBkwO6Ok1De0UfNZdo7-Ag",
+            channel_id: "UCVBkwO6Ok1De0UfNZdo7-Ag"
           }
-        ]
+        }
       },
       {
-        name: "Pazos64",
         type: "youtube",
-        link: "https://www.youtube.com/channel/UCVj_RIAE1KGK_tM-iJtb_xg",
-        info: {
-          lastUpdate: ""
-        },
-        feeds: [
-          {
-            name: "Cuidao Ahí... Observation",
-            link: "https://www.youtube.com/embed/qc80mRwsPc0"
+        title: "Cuidao Ahí... Observation",
+        link: "https://www.youtube.com/embed/qc80mRwsPc0",
+        date: new Date("2019-05-16T00:00:00Z"),
+        last_update: new Date(),
+        source: {
+          name: "Pazos64",
+          type: "youtube",
+          link: "https://www.youtube.com/channel/UCVj_RIAE1KGK_tM-iJtb_xg",
+          last_update: new Date(),
+          info: {
+            playlist_id: "UUVj_RIAE1KGK_tM-iJtb_xg",
+            channel_id: "UCVj_RIAE1KGK_tM-iJtb_xg"
           }
-        ]
+        }
       }
-    ]
+    ],
   },
   {
     id: "2",
     name: "Physics",
-    resources: [
+    feeds: [
       {
-        name: "QuantumFracture",
         type: "youtube",
-        link: "https://www.youtube.com/channel/UCbdSYaPD-lr1kW27UJuk8Pw",
-        info: {
-          lastUpdate: ""
-        },
-        feeds: [
-          {
-            name: "La Física Cuántica de Avengers Endgame",
-            link: "https://www.youtube.com/embed/ca1_rbfQMts"
+        title: "La Física Cuántica de Avengers Endgame",
+        link: "https://www.youtube.com/embed/ca1_rbfQMts",
+        date: new Date("2019-05-03T00:00:00Z"),
+        last_update: new Date(),
+        source: {
+          name: "QuantumFracture",
+          type: "youtube",
+          link: "https://www.youtube.com/channel/UCbdSYaPD-lr1kW27UJuk8Pw",
+          last_update: new Date(),
+          info: {
+            playlist_id: "UUbdSYaPD-lr1kW27UJuk8Pw",
+            channel_id: "UCbdSYaPD-lr1kW27UJuk8Pw"
           }
-        ]
-      }
-    ]
+        }
+      },
+    ],
   },
   {
     id: "3",
     name: "Music",
-    resources: [
+    feeds: [
       {
-        name: "PostmodernJukebox",
         type: "youtube",
-        link: "https://www.youtube.com/channel/UCORIeT1hk6tYBuntEXsguLg",
-        info: {
-          lastUpdate: ""
-        },
-        feeds: [
-          {
-            name: "I Don't Want To Miss A Thing - Aerosmith (1920s Brass Band Cover) ft. Sara Niemietz",
-            link: "https://www.youtube.com/embed/9iDncS9-2vI"
+        title: "I Don't Want To Miss A Thing - Aerosmith (1920s Brass Band Cover) ft. Sara Niemietz",
+        link: "https://www.youtube.com/embed/9iDncS9-2vI",
+        date: new Date("2019-02-01T00:00:00Z"),
+        last_update: new Date(),
+        source: {
+          name: "PostmodernJukebox",
+          type: "youtube",
+          link: "https://www.youtube.com/channel/UCORIeT1hk6tYBuntEXsguLg",
+          last_update: new Date(),
+          info: {
+            playlist_id: "UUORIeT1hk6tYBuntEXsguLg",
+            channel_id: "UCORIeT1hk6tYBuntEXsguLg"
           }
-        ]
+        }
       }
     ]
   }
