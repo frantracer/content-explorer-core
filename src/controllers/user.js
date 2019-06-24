@@ -1,13 +1,4 @@
-var users = {
-  "key" : {
-    email: "",
-    name: "",
-    sid: "",
-    access_token: "",
-    refresh_token: "",
-    picture_url: ""
-  }
-};
+var users = {};
 
 module.exports = {
 

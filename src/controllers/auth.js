@@ -53,9 +53,11 @@ module.exports = {
           let userProfile = {
             name: response.data.given_name,
             email: response.data.email,
-            access_token: accessToken,
-            refresh_token: refreshToken,
-            picture_url: response.data.picture
+            picture_url: response.data.picture,
+            google_profile: {
+              access_token: accessToken,
+              refresh_token: refreshToken
+            }
           }
           userC.updateUser(userProfile.email, userProfile, callback)
         }

@@ -18,7 +18,7 @@ module.exports = {
     getSubscriptions(user)
     .then((subscriptions) => {
       Promise.all(subscriptions.map((subscription) => {
-        return getFeeds(subscription).then((feeds) => {
+        return getFeeds(subscription, user).then((feeds) => {
           return feeds.map((feed) => {
             return { ...feed, "source": subscription}
           })
@@ -46,7 +46,7 @@ module.exports = {
 // PRIVATE FUNCTIONS
 
 const getSubscriptions = (user) => {
-  googleAuth = oauth2(user.access_token);
+  googleAuth = oauth2(user.google_profile.access_token);
 
   return youtube.subscriptions.list({
     auth: googleAuth,
@@ -79,8 +79,8 @@ const getSubscriptions = (user) => {
   })
 }
 
-const getFeeds = (subscription) => {
-  googleAuth = oauth2(user.access_token);
+const getFeeds = (subscription, user) => {
+  googleAuth = oauth2(user.google_profile.access_token);
 
   return youtube.playlistItems.list({
     auth: googleAuth,
