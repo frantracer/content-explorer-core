@@ -2,7 +2,7 @@
   "name": "content-explorer-server",
   "version": "0.1.0",
   "license": "MIT",
-  "homepage": "https://frantracer.github.io/content-explorer/",
+  "homepage": ".",
   "devDependencies": {},
   "dependencies": {
     "body-parser": "^1.18.3",

@@ -1,6 +1,3 @@
-const dotenv = require('dotenv');
-dotenv.config();
-
 const contenmarkC = require('../controllers/contentmark')
 const userC = require('../controllers/user')
 const authC = require('../controllers/auth')
@@ -8,14 +5,11 @@ const authC = require('../controllers/auth')
 // ENDPOINTS DEFINITION
 
 module.exports = (router) => {
+  router.route('/foo').get(foo),
+
   router.route('/login').post(login),
 
-  router.route('/contentmarks').get(getContentmarks),
-  router.route('/contentmarks/:id').get(foo),
-  router.route('/contentmarks/:id').delete(foo),
-  router.route('/contentmarks/:id').put(foo),
-
-  router.route('/contentmarks/:id/feeds').get(foo)
+  router.route('/contentmarks').get(getContentmarks)
 }
 
 // COMMON FUNCTIONS
