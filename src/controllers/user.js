@@ -1,3 +1,5 @@
+const crypto = require('crypto')
+
 var users = {};
 
 module.exports = {
@@ -20,9 +22,29 @@ module.exports = {
     Object.keys(profile).forEach(field => {
       users[key][field] = profile[field]
     });
-    users[key]["sid"] = "mysid"
 
-    callback(null, users[key])
+    generateUniqueSid((error, sid) => {
+      users[key]["sid"] = sid
+      callback(error, users[key])
+    })
   }
 
+}
+
+// Private functions
+
+function generateUniqueSid(callback) {
+  var sha = crypto.createHash('sha256');
+  sha.update(Math.random().toString());
+  sid = sha.digest('hex');
+
+  module.exports.getUserBySid(sid, (error, user) => {
+    if(error) {
+      callback(error)
+    } else if(user === null) {
+      callback(null, sid)
+    } else {
+      generateUniqueSid(callback)
+    }
+  })
 }
