@@ -5,7 +5,7 @@ const authC = require('../controllers/auth')
 // ENDPOINTS DEFINITION
 
 module.exports = (router) => {
-  router.route('/foo').get(foo),
+  router.route('/ping').get(ping),
 
   router.route('/login').post(login),
 
@@ -31,8 +31,8 @@ function filterUserProfile(user) {
   }
 }
 
-function foo(req, res, next) {
-  res.status(200).send({foo: 'foo'});
+function ping(req, res, next) {
+  sendResponse(null, {message: "ok"}, res)
 }
 
 // ROUTE FUNCTIONS
@@ -61,8 +61,4 @@ function getContentmarks(req, res, next) {
       sendResponse(new CustomError("User not found"), null, res)
     }
   })
-}
-
-function getSingleContentmarkByUser(req, res, next) {
-  res.status(200).send({foo: 'foo'});
 }
