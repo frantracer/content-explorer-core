@@ -9,6 +9,8 @@ const routes = require('./routes/')
 
 const app = express()
 
+const db = require("./controllers/database")
+
 /** set up SSL */
 var server
 if(process.env.HTTPS) {
@@ -34,8 +36,12 @@ const router = express.Router()
 routes(router)
 app.use('/api', router)
 
-/** start server */
-let port = 3000 || process.env.PORT;
-server.listen(port, () => {
-    console.log(`Server started at port: ${port}`);
+/** connect to database */
+db.connect(process.env.DB_URL, process.env.DB_NAME, () => {
+    /** start server */
+    let port = 3000 || process.env.PORT;
+    server.listen(port, () => {
+        console.log(`Server started at port: ${port}`);
+    });
 });
+

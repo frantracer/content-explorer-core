@@ -1,3 +1,5 @@
+const CustomError = require('../common/errors')
+
 const contenmarkC = require('../controllers/contentmark')
 const userC = require('../controllers/user')
 const authC = require('../controllers/auth')
@@ -18,6 +20,7 @@ function sendResponse(error, data, res) {
   if(error) {
     res.status(error.code).send(error.message)
     console.error(error.message + " : " + error.code + " -> " + error.description)
+    console.debug(error.stack)
   } else {
     res.status(200).send(data)
   }
@@ -38,13 +41,15 @@ function ping(req, res, next) {
 // ROUTE FUNCTIONS
 
 function login(req, res, next) {
-  if(req.body.sid) {
+  if(req.headers.sid) {
     userC.getUserBySid(req.headers.sid, (error, user) => {
       sendResponse(error, filterUserProfile(user), res)
     })
   } else if (req.body.code) {
     authC.validateGoogleCode(req.body.code, (error, user) => {
-      sendResponse(error, filterUserProfile(user), res)
+      userC.updateUserSid(user, (error, user) => {
+        sendResponse(error, filterUserProfile(user), res)
+      })
     })
   }
 }

@@ -12,7 +12,7 @@ RUN npm install
 RUN mkdir -p /etc/linkurator/config
 
 # Link external configuration
-RUN ln -s /etc/linkurator/config/core.env .env
+RUN ln -sfn /etc/linkurator/config/core.env .env
 
 # Start server
 CMD npm start

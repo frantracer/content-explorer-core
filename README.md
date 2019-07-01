@@ -16,19 +16,24 @@ Create directory with the following files:
 |- core.env
 ```
 
-Build docker image
+Build docker images
 
 ```
-cd $APP
+cd $APP/db
+sudo docker build -t content-explorer-db:latest .
+cd ..
 sudo docker build -t $APP:latest .
 ```
 
 
 # Development environment
 
-Create container
+Create containers
 
-`sudo docker run -it --name $APP -v $(pwd)/../config:/etc/linkurator/config -v $(pwd):/usr/src/app -p 3000:3000 $APP /bin/sh`
+```
+sudo docker run -d --network host --name content-explorer-db -p 27017:27017 content-explorer-db:latest
+sudo docker run -it --network host --name $APP -v $(pwd)/../config:/etc/linkurator/config -v $(pwd):/usr/src/app -p 3000:3000 $APP /bin/sh
+```
 
 Download packages
 
@@ -36,7 +41,7 @@ Download packages
 
 Set server configuration
 
-`ln -s /etc/linkurator/config/core.env .env`
+`ln -sfn /etc/linkurator/config/core.env .env`
 
 Start application
 
@@ -51,4 +56,7 @@ https://localhost:3000/api
 
 Create and launch container
 
-`sudo docker run -d --name $APP -v $(pwd)/../config:/etc/linkurator/config -p 3000:3000 $APP`
+```
+sudo docker run -d --network host --name content-explorer-db -p 27017:27017 content-explorer-db:latest
+sudo docker run -d --network host --name $APP -v $(pwd)/../config:/etc/linkurator/config -p 3000:3000 $APP
+```

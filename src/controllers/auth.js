@@ -59,7 +59,7 @@ module.exports = {
               refresh_token: refreshToken
             }
           }
-          userC.updateUser(userProfile.email, userProfile, callback)
+          userC.updateOrCreateUser(userProfile, callback)
         }
       })
     }
