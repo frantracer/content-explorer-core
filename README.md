@@ -19,9 +19,8 @@ Create directory with the following files:
 Build docker images
 
 ```
-cd $APP/db
-sudo docker build -t content-explorer-db:latest .
-cd ..
+cd $APP
+sudo docker build -t content-explorer-db:latest ./db
 sudo docker build -t $APP:latest .
 ```
 
