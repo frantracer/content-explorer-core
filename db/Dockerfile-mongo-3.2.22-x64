@@ -1,0 +1,17 @@
+# sudo docker build -t frantracer/mongo-x64:3.2.22 -f Dockerfile-mongo-3.2.22-x64 .
+
+FROM ubuntu:16.04
+
+RUN apt update && apt install -y curl
+
+RUN curl -O https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1604-3.2.22.tgz
+
+RUN tar -zxvf mongodb-linux-x86_64-ubuntu1604-3.2.22.tgz
+
+RUN cp mongodb-linux-x86_64-ubuntu1604-3.2.22/bin/* /usr/bin
+
+RUN rm -rf mongodb-linux-x86_64-ubuntu1604-3.2.22/bin/* mongodb-linux-x86_64-ubuntu1604-3.2.22.tgz
+
+RUN mkdir -p /data/db
+
+CMD mongod

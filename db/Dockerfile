@@ -1,4 +1,4 @@
-FROM mongo
+FROM frantracer/mongo-x64:3.2.22
 
 WORKDIR /usr/src/app
 

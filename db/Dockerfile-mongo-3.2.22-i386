@@ -1,4 +1,4 @@
-# sudo docker build -t i386/mongo:3.2.22 -f Dockerfile-mongo-3.2.22-i386 .
+# sudo docker build -t frantracer/mongo-i386:3.2.22 -f Dockerfile-mongo-3.2.22-i386 .
 
 FROM ubuntu:16.04
 
@@ -9,6 +9,8 @@ RUN curl -O https://fastdl.mongodb.org/linux/mongodb-linux-i686-3.2.22.tgz
 RUN tar -zxvf mongodb-linux-i686-3.2.22.tgz
 
 RUN cp mongodb-linux-i686-3.2.22/bin/* /usr/bin
+
+RUN rm -rf mongodb-linux-i686-3.2.22/bin/* mongodb-linux-i686-3.2.22.tgz
 
 RUN mkdir -p /data/db
 
