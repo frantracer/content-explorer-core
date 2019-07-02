@@ -1,0 +1,17 @@
+# sudo docker build -t i386/mongo:3.2.22 -f Dockerfile-mongo-3.2.22-i386 .
+
+FROM ubuntu:16.04
+
+RUN apt update && apt install -y curl
+
+RUN curl -O https://fastdl.mongodb.org/linux/mongodb-linux-i686-3.2.22.tgz
+
+RUN tar -zxvf mongodb-linux-i686-3.2.22.tgz
+
+RUN cp mongodb-linux-i686-3.2.22/bin/* /usr/bin
+
+RUN mkdir -p /data/db
+
+RUN mongod --fork --logpath /var/log/mongodb.log --dbpath /data/db --storageEngine mmapv1 && mongod --shutdown
+
+CMD mongod
