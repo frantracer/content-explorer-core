@@ -31,8 +31,8 @@ sudo docker build -t $APP:latest .
 Create containers
 
 ```
-sudo docker run -d --network host --name content-explorer-db -p 27017:27017 content-explorer-db:latest
-sudo docker run -it --network host --name $APP -v $(pwd)/../config:/etc/linkurator/config -v $(pwd):/usr/src/app -p 3000:3000 $APP /bin/sh
+sudo docker run -d --network host --name content-explorer-db content-explorer-db
+sudo docker run -it --network host --name $APP -v $(pwd)/../config:/etc/linkurator/config -v $(pwd):/usr/src/app $APP /bin/sh
 ```
 
 Download packages
@@ -57,6 +57,6 @@ https://localhost:3000/api
 Create and launch container
 
 ```
-sudo docker run -d --network host --name content-explorer-db -p 27017:27017 content-explorer-db:latest
-sudo docker run -d --network host --name $APP -v $(pwd)/../config:/etc/linkurator/config -p 3000:3000 $APP
+sudo docker run -d --network host --name content-explorer-db content-explorer-db
+sudo docker run -d --network host --name $APP -v $(pwd)/../config:/etc/linkurator/config $APP
 ```

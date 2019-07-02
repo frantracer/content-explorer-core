@@ -4,7 +4,7 @@ WORKDIR /usr/src/app
 
 EXPOSE 27017
 
-# Download and install packages
+# Copy scripts
 COPY ./goods /usr/src/app
 
 # Initialize mongodb
