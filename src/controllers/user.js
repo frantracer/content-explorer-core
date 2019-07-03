@@ -1,60 +1,55 @@
 const crypto = require('crypto')
 const db = require("../controllers/database").dbc
 
-// Private functions
+// PRIVATE FUNCTIONS
 
-function _generateUniqueSid(callback) {
+function generateUniqueSid() {
   var sha = crypto.createHash('sha256');
   sha.update(Math.random().toString());
   sid = sha.digest('hex');
 
-  getUserBySid(sid, (error, user) => {
-    if(error) {
-      callback(error)
-    } else if(user === null) {
-      callback(null, sid)
+  return getUserBySid(sid)
+  .then(user => {
+    if(user === null) {
+      return sid
     } else {
-      _generateUniqueSid(callback)
+      return generateUniqueSid()
     }
   })
 }
 
-// Public functions
+// PUBLIC FUNCTIONS
 
-function getUserBySid (sid, callback) {
-  db().collection("users").findOne({"sid": sid}, (error, user) => {
-    callback(error, user)
+function getUserBySid (sid) {
+  return db().collection("users").findOne({"sid": sid})
+  .then(user => {
+    return user
   })
 }
 
-function updateOrCreateUser (profile, callback) {
-  db().collection("users").findOne({email: profile.email}, (error, user) => {
-    if(error) {
-      callback(error)
+function updateOrCreateUser (profile) {
+  return db().collection("users").findOne({email: profile.email})
+  .then(user => {
+    if(!user) {
+      return db().collection("users")
+      .insertOne(profile).then(result => {
+        return result.ops[0]
+      })
     } else {
-      if(!user) {
-        db().collection("users")
-        .insertOne(profile, (error, result) => {
-          user = result.ops[0]
-          callback(error, user)
-        })
-      } else {
-        db().collection("users")
-        .findOneAndUpdate({_id: user._id}, {"$set": profile}, {"returnOriginal": false}, (error, result) => {
-          user = result.value
-          callback(error, user)
-        })
-      }
+      return db().collection("users")
+      .findOneAndUpdate({_id: user._id}, {"$set": profile}, {"returnOriginal": false}).then(result => {
+        return result.value
+      })
     }
   })
 }
 
-function updateUserSid (user, callback) {
-  _generateUniqueSid((error, sid) => {
-    db().collection("users")
-    .findOneAndUpdate({_id: user._id}, {"$set" : { "sid": sid } }, {"returnOriginal": false}, (error, result) => {
-      user = result.value
-      callback(error, result.value)
+function updateUserSid (user) {
+  return generateUniqueSid()
+  .then(sid => {
+    return db().collection("users").findOneAndUpdate({_id: user._id}, {"$set" : { "sid": sid } }, {"returnOriginal": false})
+    .then(result => {
+      return result.value
     })
   })
 }

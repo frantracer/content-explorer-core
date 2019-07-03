@@ -16,14 +16,17 @@ module.exports = (router) => {
 
 // COMMON FUNCTIONS
 
-function sendResponse(error, data, res) {
-  if(error) {
-    res.status(error.code).send(error.message)
-    console.error(error.message + " : " + error.code + " -> " + error.description)
-    console.debug(error.stack)
-  } else {
-    res.status(200).send(data)
+function sendResponse(res, data, code) {
+  res.status(code ? code : 200).send(data)
+}
+
+function sendError(res, error) {
+  if(!(error instanceof CustomError)) {
+    error = new CustomError("Internal error", 500, error)
   }
+  res.status(error.code).send(error.message)
+  console.error(error.message + " : " + error.code + " -> " + error.description)
+  console.debug(error.stack)
 }
 
 function filterUserProfile(user) {
@@ -35,35 +38,41 @@ function filterUserProfile(user) {
 }
 
 function ping(req, res, next) {
-  sendResponse(null, {message: "ok"}, res)
+  sendResponse(res, {message: "ok"})
 }
 
 // ROUTE FUNCTIONS
 
 function login(req, res, next) {
   if(req.headers.sid) {
-    userC.getUserBySid(req.headers.sid, (error, user) => {
-      sendResponse(error, filterUserProfile(user), res)
+    userC.getUserBySid(req.headers.sid).then(user => {
+      sendResponse(res, filterUserProfile(user))
+    }).catch(error => {
+      sendError(res, error)
     })
   } else if (req.body.code) {
-    authC.validateGoogleCode(req.body.code, (error, user) => {
-      userC.updateUserSid(user, (error, user) => {
-        sendResponse(error, filterUserProfile(user), res)
-      })
+    authC.validateGoogleCode(req.body.code)
+    .then(user => {
+      return userC.updateUserSid(user)
+    }).then(user => {
+      sendResponse(res, filterUserProfile(user))
+    }).catch(error => {
+      sendError(res, error)
     })
   }
 }
 
 function getContentmarks(req, res, next) {
-  userC.getUserBySid(req.headers.sid, (error, user) => {
-    if(error) {
-      sendResponse(error, null, res)
-    } else if(user != null) {
-      contenmarkC.getAllContentmarksByUser(user, (error, contentmarks) => {
-        sendResponse(error, {items: contentmarks}, res)
-      });
+  userC.getUserBySid(req.headers.sid)
+  .then(user => {
+    if(user != null) {
+      return contenmarkC.getAllContentmarksByUser(user)
     } else {
-      sendResponse(new CustomError("User not found"), null, res)
+      throw new CustomError("User not found")
     }
+  }).then(contentmarks => {
+    sendResponse(res, {items: contentmarks})
+  }).catch(error => {
+    sendError(res, error)
   })
 }

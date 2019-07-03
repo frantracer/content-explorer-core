@@ -10,73 +10,61 @@ const oauth2Client = () => {
     process.env.WEB_ADDRESS);
 }
 
-module.exports = {
+// PRIVATE FUNCTIONS
 
-  validateGoogleCode : function (code, callback) {
+function verifyIdToken(idToken, accessToken, refreshToken) {
+  return new Promise((resolve, reject) => {
+    // Create client
     const client = oauth2Client();
-
-    const verifyIdToken = (idToken, accessToken, refreshToken) => {
-      // Create client
-      client.setCredentials({access_token: accessToken});
-      const oauth2 = google.oauth2({
-        auth: client,
-        version: 'v2'
-      });
-
-      // Verify id token
-      oauth2.tokeninfo({id_token: idToken}, (error, response) => {
-        if(error) {
-          callback(new CustomError("Cannot validate ID token", 400, error))
+    client.setCredentials({access_token: accessToken});
+    const oauth2 = google.oauth2({
+      auth: client,
+      version: 'v2'
+    });
+    // Verify id token
+    oauth2.tokeninfo({id_token: idToken}, (error, response) => {
+      if(error) {
+        reject(new CustomError("Cannot validate ID token", 400, error))
+      } else {
+        if(!isTokenIdResponseValid(response)) {
+          throw new CustomError("Invalid ID token", 400)
         } else {
-          if(isTokenIdResponseValid(response)) {
-            getUserProfile(accessToken, refreshToken)
-          } else {
-            callback(new CustomError("Invalid ID token", 400))
-          }
+          resolve({access: accessToken, refresh: refreshToken})
         }
-      })
-    }
-
-    const getUserProfile = (accessToken, refreshToken) => {
-      // Create client
-      client.setCredentials({access_token: accessToken});
-      const oauth2 = google.oauth2({
-        auth: client,
-        version: 'v2'
-      });
-
-      // Get user profile
-      oauth2.userinfo.get({access_token: accessToken}, (error, response) => {
-        if(error) {
-          callback(new CustomError("Cannot obtain user info", 400, error))
-        } else {
-          let userProfile = {
-            name: response.data.given_name,
-            email: response.data.email,
-            picture_url: response.data.picture,
-            google_profile: {
-              access_token: accessToken,
-              refresh_token: refreshToken
-            }
-          }
-          userC.updateOrCreateUser(userProfile, callback)
-        }
-      })
-    }
-
-    // Get access and id token
-    return client.getToken(code)
-    .then((response) => {
-      verifyIdToken(response.res.data.id_token, response.res.data.access_token, response.res.data.refresh_token)
+      }
     })
-    .catch((error) => {
-      callback(new CustomError("Cannot obtain access token from code", 400, error))
-    })
-  }
-
+  })
 }
 
-// PRIVATE FUNCTIONS
+function getUserProfile(accessToken, refreshToken) {
+  // Create client
+  const client = oauth2Client();
+  client.setCredentials({access_token: accessToken});
+  const oauth2 = google.oauth2({
+    auth: client,
+    version: 'v2'
+  });
+
+  // Get user profile
+  return new Promise((resolve, reject) => {
+    oauth2.userinfo.get({access_token: accessToken}, (error, response) => {
+      if(error) {
+        reject(new CustomError("Cannot obtain user info", 400, error))
+      } else {
+        let userProfile = {
+          name: response.data.given_name,
+          email: response.data.email,
+          picture_url: response.data.picture,
+          google_profile: {
+            access_token: accessToken,
+            refresh_token: refreshToken
+          }
+        }
+        resolve(userProfile)
+      }
+    })
+  })
+}
 
 function isTokenIdResponseValid(response) {
   if(response.data.issuer === 'https://accounts.google.com') {
@@ -85,3 +73,26 @@ function isTokenIdResponseValid(response) {
     return false
   }
 }
+
+// PUBLIC FUNCTIONS
+
+function validateGoogleCode (code) {
+  return oauth2Client().getToken(code)
+  .then(response => {
+    return {
+      id: response.res.data.id_token,
+      access: response.res.data.access_token,
+      refresh: response.res.data.refresh_token
+    }
+  }).catch(error => {
+    throw new CustomError("Cannot obtain access token from code", 400, error)
+  }).then(token => {
+    return verifyIdToken(token.id, token.access, token.refresh)
+  }).then(token => {
+    return getUserProfile(token.access, token.refresh)
+  }).then(userProfile => {
+    return userC.updateOrCreateUser(userProfile)
+  })
+}
+
+module.exports = { validateGoogleCode }

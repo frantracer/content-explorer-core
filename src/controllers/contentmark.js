@@ -13,39 +13,9 @@ const oauth2 = (accessToken) => {
 
 const youtube = google.youtube('v3')
 
-module.exports = {
-  getAllContentmarksByUser: function (user, callback) {
-    getSubscriptions(user)
-    .then((subscriptions) => {
-      Promise.all(subscriptions.map((subscription) => {
-        return getFeeds(subscription, user).then((feeds) => {
-          return feeds.map((feed) => {
-            return { ...feed, "source": subscription}
-          })
-        })
-      }))
-      .then((feedsBySubs) => {
-        var feeds = [].concat.apply([], feedsBySubs)
-        feeds.sort((a, b) => { return b.date - a.date })
-
-        contentmarks = [
-          {
-            id: "1",
-            name: "Uncategorized",
-            feeds: feeds
-          }
-        ]
-        callback(null, contentmarks);
-      })
-    }).catch((error) => {
-      callback(error)
-    })
-  }
-}
-
 // PRIVATE FUNCTIONS
 
-const getSubscriptions = (user) => {
+function getSubscriptions(user) {
   googleAuth = oauth2(user.google_profile.access_token);
 
   return youtube.subscriptions.list({
@@ -73,13 +43,11 @@ const getSubscriptions = (user) => {
             }
           }
         })
-    })).then((subscriptions) => {
-      return subscriptions
-    })
+    }))
   })
 }
 
-const getFeeds = (subscription, user) => {
+function getFeeds(subscription, user) {
   googleAuth = oauth2(user.google_profile.access_token);
 
   return youtube.playlistItems.list({
@@ -98,6 +66,34 @@ const getFeeds = (subscription, user) => {
     })
   })
 }
+
+// PUBLIC FUNCTIONS
+
+function getAllContentmarksByUser(user) {
+  return getSubscriptions(user)
+  .then(subscriptions => {
+    return Promise.all(subscriptions.map(subscription => {
+      return getFeeds(subscription, user).then(feeds => {
+        return feeds.map(feed => {
+          return { ...feed, "source": subscription }
+        })
+      })
+    }))
+  }).then(feedsBySubs => {
+    var feeds = [].concat.apply([], feedsBySubs)
+    feeds.sort((a, b) => { return b.date - a.date })
+
+    return contentmarks = [
+      {
+        id: "1",
+        name: "Uncategorized",
+        feeds: feeds
+      }
+    ]
+  })
+}
+
+module.exports = { getAllContentmarksByUser }
 
 // SAMPLE RESULTS
 
