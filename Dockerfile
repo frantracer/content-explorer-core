@@ -15,4 +15,4 @@ RUN mkdir -p /etc/linkurator/config
 RUN ln -sfn /etc/linkurator/config/core.env .env
 
 # Start server
-CMD npm start
+CMD npm start > /var/log/linkurator.log 2>&1

@@ -3,8 +3,7 @@
 Download project
 
 ```
-export APP=content-explorer-core
-git clone https://github.com/frantracer/$APP
+git clone https://github.com/frantracer/content-explorer-core
 ```
 
 Create directory with the following files:
@@ -16,35 +15,16 @@ Create directory with the following files:
 |- core.env
 ```
 
-Build docker images
-
-```
-cd $APP
-sudo docker build -t content-explorer-db:latest ./db
-sudo docker build -t $APP:latest .
-```
+Install docker (https://docs.docker.com/install/)
 
 
 # Development environment
 
-Create containers
+Run the following command and follow instructions:
 
 ```
-sudo docker run -d --network host --name content-explorer-db content-explorer-db
-sudo docker run -it --network host --name $APP -v $(pwd)/../config:/etc/linkurator/config -v $(pwd):/usr/src/app $APP /bin/sh
+python deploy.py --config ../config/ --clear --env DEV
 ```
-
-Download packages
-
-`npm install`
-
-Set server configuration
-
-`ln -sfn /etc/linkurator/config/core.env .env`
-
-Start application
-
-`npm start`
 
 The API will be available at:
 
@@ -53,9 +33,8 @@ https://localhost:3000/api
 
 # Production environment
 
-Create and launch container
+Run the following command:
 
 ```
-sudo docker run -d --network host --name content-explorer-db content-explorer-db
-sudo docker run -d --network host --name $APP -v $(pwd)/../config:/etc/linkurator/config $APP
+python deploy.py --config ../config/ --clear --env PRO
 ```
