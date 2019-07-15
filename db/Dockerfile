@@ -14,4 +14,4 @@ RUN mongod --fork --logpath /var/log/mongodb.log --dbpath /data/db \
     && mongod --shutdown
 
 # Start server
-CMD mongod
+CMD mongod --journal
