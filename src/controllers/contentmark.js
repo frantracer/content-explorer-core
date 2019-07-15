@@ -59,6 +59,7 @@ function getFeeds(subscription, user) {
     return response.data.items.map((item) => {
       return {
         type: "youtube",
+        thumbnail: item.snippet.thumbnails.medium.url,
         link: "https://www.youtube.com/embed/" + item.snippet.resourceId.videoId,
         title: item.snippet.title,
         date: new Date(item.snippet.publishedAt)
