@@ -5,9 +5,14 @@ class CustomError {
             this.code = description.code
             this.description = description.description
             this.stack = description.stack
+        } else if(description instanceof Error) {
+            this.message = description.message;
+            this.code = 500
+            this.description = description
+            this.stack = description.stack
         } else {
             this.message = (message ? message : "No error message provided");
-            this.code = (code ? code : 400);
+            this.code = (code ? code : 500);
             this.description = (description ? description : "No more information");
             this.stack = new Error().stack
         }
