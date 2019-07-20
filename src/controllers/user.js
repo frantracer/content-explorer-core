@@ -31,11 +31,17 @@ function updateOrCreateUser (profile) {
   return db().collection("users").findOne({email: profile.email})
   .then(user => {
     if(!user) {
+      profile["profile_update"] = new Date();
+      profile["subs_update"] = new Date(0);
+      profile["subscriptions"] = []
+      
       return db().collection("users")
       .insertOne(profile).then(result => {
         return result.ops[0]
       })
     } else {
+      profile["profile_update"] = new Date();
+
       return db().collection("users")
       .findOneAndUpdate({_id: user._id}, {"$set": profile}, {"returnOriginal": false}).then(result => {
         return result.value
