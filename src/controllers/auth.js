@@ -3,19 +3,12 @@ const CustomError = require("../common/errors.js");
 
 const userC = require('../controllers/user')
 
-const oauth2Client = () => { 
-  return new google.auth.OAuth2(
-    process.env.GOOGLE_CLIENT_ID,
-    process.env.GOOGLE_CLIENT_SECRET,
-    process.env.WEB_ADDRESS);
-}
-
 // PRIVATE FUNCTIONS
 
 function verifyIdToken(idToken, accessToken, refreshToken) {
   return new Promise((resolve, reject) => {
     // Create client
-    const client = oauth2Client();
+    const client = createOauth2Client();
     client.setCredentials({access_token: accessToken});
     const oauth2 = google.oauth2({
       auth: client,
@@ -38,7 +31,7 @@ function verifyIdToken(idToken, accessToken, refreshToken) {
 
 function getUserProfile(accessToken, refreshToken) {
   // Create client
-  const client = oauth2Client();
+  const client = createOauth2Client();
   client.setCredentials({access_token: accessToken});
   const oauth2 = google.oauth2({
     auth: client,
@@ -76,8 +69,19 @@ function isTokenIdResponseValid(response) {
 
 // PUBLIC FUNCTIONS
 
+function createOauth2Client (accessToken) { 
+  client = new google.auth.OAuth2(
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET,
+    process.env.WEB_ADDRESS);
+  if(accessToken){
+    client.setCredentials({access_token: accessToken});
+  }
+  return client;
+}
+
 function validateGoogleCode (code) {
-  return oauth2Client().getToken(code)
+  return createOauth2Client().getToken(code)
   .then(response => {
     return {
       id: response.res.data.id_token,
@@ -95,4 +99,4 @@ function validateGoogleCode (code) {
   })
 }
 
-module.exports = { validateGoogleCode }
+module.exports = { validateGoogleCode, createOauth2Client }

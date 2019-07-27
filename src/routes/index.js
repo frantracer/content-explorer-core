@@ -99,7 +99,7 @@ function login(req) {
 }
 
 function getContentmarks(req) {
-  return contentmarkC.getAllContentmarksByUser(req.user)
+  return contentmarkC.getContentmarks(req.user)
   .then(contentmarks => {
     return {items: contentmarks}
   })
