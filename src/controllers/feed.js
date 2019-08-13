@@ -45,7 +45,6 @@ function getFeeds(subscription, user) {
   return new Promise(resolve => {
     if(updateFeeds) {
       var googleAuth = authC.createOauth2Client(user.google_profile.access_token);
-      console.log("Subscription " + subscription.name)
       resolve(getVideosInPlaylist(googleAuth, subscription.info.playlist_id, subscription.feeds_update, MAX_FEEDS_PER_SUB, [], null))
     } else {
       resolve([])
