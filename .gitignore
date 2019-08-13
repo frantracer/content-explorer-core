@@ -3,3 +3,4 @@
 
 # misc
 .env
+db/goods/backup/*

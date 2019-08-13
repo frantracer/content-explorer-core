@@ -7,11 +7,26 @@ const authC = require('../controllers/auth')
 // ENDPOINTS DEFINITION
 
 module.exports = (router) => {
-  router.route('/ping').get(apiCall(ping, false)),
+  router.route('/ping')
+  .get(apiCall(ping, false)),
 
-  router.route('/login').post(apiCall(login, false)),
+  router.route('/login')
+  .post(apiCall(login, false)),
 
-  router.route('/contentmarks').get(apiCall(getContentmarks, true))
+  router.route('/contentmarks')
+  .get(apiCall(getContentmarks, true)),
+
+  router.route('/contentmarks')
+  .post(apiCall(createContentmark, true)),
+
+  router.route('/contentmarks/:contentmark_id')
+  .delete(apiCall(deleteContentmark, true)),
+
+  router.route('/contentmarks/:contentmark_id/subscriptions')
+  .post(apiCall(addSubscription, true)),
+
+  router.route('/contentmarks/:contentmark_id/subscriptions/:subscription_id')
+  .delete(apiCall(removeSubscription, true))
 }
 
 // COMMON FUNCTIONS
@@ -103,4 +118,26 @@ function getContentmarks(req) {
   .then(contentmarks => {
     return {items: contentmarks}
   })
+}
+
+function createContentmark(req) {
+  if(!req.body.name) {
+    throw new CustomError("No contentmark name provided", 400)
+  }
+  return contentmarkC.createContentmark(req.user, req.body)
+  .then(contentmark => {
+    return contentmark
+  })
+}
+
+function deleteContentmark(req) {
+  return contentmarkC.deleteContentmark(req.user, req.params.contentmark_id)
+}
+
+function addSubscription(req) {
+  return contentmarkC.addSubscription(req.user, req.params.contentmark_id, req.body.subscription_id)
+}
+
+function removeSubscription(req) {
+  return contentmarkC.removeSubscription(req.user, req.params.contentmark_id, req.params.subscription_id)
 }

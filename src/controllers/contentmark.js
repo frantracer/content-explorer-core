@@ -1,20 +1,35 @@
 const db = require("../controllers/database").dbc
 
+const ObjectId = require('mongodb').ObjectId;
+
+const CustomError = require('../common/errors')
+
 const subscriptionC = require('../controllers/subscription')
 const feedC = require('../controllers/feed')
 
 // PRIVATE FUNCTIONS
 
 function getContentmarkList(user) {
-  return db().collection("subscriptions").find({}).project({"_id" : 1}).toArray()
-  .then(sub_ids => {
-    return contentmarks = [
-      {
-        _id: "1",
+  return db().collection("contentmarks").find({user_id: user._id}).toArray()
+  .then(contentmarks => {
+    return db().collection("subscriptions").find({}).project({"_id" : 1}).toArray()
+    .then(sub_ids => {
+      sub_ids = sub_ids.map(sub_id => sub_id._id.toString())
+
+      categorized_subs_ids =
+        contentmarks.map(contentmark => { return contentmark.subscriptions })
+        .reduce((list1, list2) => { return list1.concat(list2) }, [])
+
+      sub_ids = sub_ids.filter(sub_id => !categorized_subs_ids.includes(sub_id) );
+
+      var uncategorized = {
+        _id: ObjectId("000000000000000000000000"),
         name: "Uncategorized",
         subscriptions: sub_ids
       }
-    ] 
+      contentmarks.push(uncategorized)
+      return contentmarks
+    })
   })
 }
 
@@ -30,7 +45,7 @@ function getContentmarks(user) {
     return getContentmarkList(user)
   }).then(contentmarks => {
     return Promise.all(contentmarks.map(contentmark => {
-      var subs_ids = contentmark.subscriptions.map(sub => { return sub._id })
+      var subs_ids = contentmark.subscriptions.map(sub_id => { return ObjectId(sub_id) })
       return db().collection("feeds").find({"subscription" : { "$in" : subs_ids } })
       // TODO: sort and limit by parameters
       .sort({"date" : -1}).limit(100).toArray()
@@ -45,7 +60,84 @@ function getContentmarks(user) {
   })
 }
 
-module.exports = { getContentmarks }
+function createContentmark(user, contentmark) {
+  return db().collection("contentmarks").insertOne({
+    name: contentmark.name,
+    user_id: user._id,
+    subscriptions: []
+  })
+  .then(result => {
+    return result.ops[0]
+  })
+}
+
+function deleteContentmark(user, contentmark_id) {
+  return db().collection("contentmarks").findOne({_id: ObjectId(contentmark_id), user_id: user._id})
+  .then(contentmark => {
+    if(contentmark == null) {
+      throw new CustomError("No contentmark found")
+    } else {
+      return db().collection("contentmarks").deleteOne({_id: contentmark._id})
+      .then(result => {
+        return contentmark
+      })
+    }
+  })
+}
+
+function addSubscription(user, contentmark_id, subscription_id) {
+  return db().collection("subscriptions").findOne({ "_id" : ObjectId(subscription_id) })
+  .then(subscription => {
+    if(subscription == null) {
+      throw new CustomError("Subscription does not exist")
+    }
+  }).then(() => {
+    return db().collection("contentmarks").findOne({ "_id" : ObjectId(contentmark_id) })
+  }).then(contentmark => {
+    console.log(contentmark)
+    if(contentmark == null || String(contentmark.user_id) != String(user._id)) {
+      throw new CustomError("Contentmark not found")
+    }
+    return contentmark;
+  }).then(contentmark => {
+    return db().collection("contentmarks").findOneAndUpdate(
+      {"_id" : ObjectId(contentmark._id)},
+      {
+        "$addToSet" : { "subscriptions" : subscription_id }
+      },
+      {"returnOriginal": false})
+  }).then(result => {
+    return result.value
+  })
+}
+
+function removeSubscription(user, contentmark_id, subscription_id) {
+  return db().collection("subscriptions").findOne({ "_id" : ObjectId(subscription_id) })
+  .then(subscription => {
+    if(subscription == null) {
+      throw new CustomError("Subscription does not exist")
+    }
+  }).then(() => {
+    return db().collection("contentmarks").findOne({ "_id" : ObjectId(contentmark_id) })
+  }).then(contentmark => {
+    console.log(contentmark)
+    if(contentmark == null || String(contentmark.user_id) != String(user._id)) {
+      throw new CustomError("Contentmark not found")
+    }
+    return contentmark;
+  }).then(contentmark => {
+    return db().collection("contentmarks").findOneAndUpdate(
+      {"_id" : ObjectId(contentmark._id)},
+      {
+        "$pull" : { "subscriptions" : subscription_id }
+      },
+      {"returnOriginal": false})
+  }).then(result => {
+    return result.value
+  })
+}
+
+module.exports = { getContentmarks, createContentmark, deleteContentmark, addSubscription, removeSubscription }
 
 // SAMPLE RESULTS
 
