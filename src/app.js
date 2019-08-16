@@ -4,6 +4,7 @@ const express = require('express')
 const cors = require('cors')
 const bodyParser = require('body-parser')
 const helmet = require('helmet')
+const cookieParser = require("cookie-parser");
 
 const routes = require('./routes/')
 
@@ -27,9 +28,10 @@ if(process.env.HTTPS) {
 }
 
 /** set up middlewares */
-app.use(cors())
+app.use(cors({origin: process.env.WEB_ADDRESS, credentials: true}))
 app.use(bodyParser.json())
 app.use(helmet())
+app.use(cookieParser())
 
 /** set up routes {API Endpoints} */
 const router = express.Router()
