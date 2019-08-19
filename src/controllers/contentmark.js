@@ -53,6 +53,7 @@ function getContentmarks(user) {
         return {
           "id": contentmark._id,
           "name": contentmark.name,
+          "subscriptions": subs_ids,
           "feeds": feeds
         }
       })

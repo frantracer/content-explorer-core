@@ -1,6 +1,7 @@
 const CustomError = require('../common/errors')
 
 const contentmarkC = require('../controllers/contentmark')
+const subscriptionC = require('../controllers/subscription')
 const userC = require('../controllers/user')
 const authC = require('../controllers/auth')
 
@@ -29,7 +30,10 @@ module.exports = (router) => {
   .post(apiCall(addSubscription)),
 
   router.route('/contentmarks/:contentmark_id/subscriptions/:subscription_id')
-  .delete(apiCall(removeSubscription))
+  .delete(apiCall(removeSubscription)),
+
+  router.route('/subscriptions')
+  .get(apiCall(getSubscriptions))
 }
 
 // COMMON FUNCTIONS
@@ -173,4 +177,22 @@ function addSubscription(req) {
 
 function removeSubscription(req) {
   return contentmarkC.removeSubscription(req.user, req.params.contentmark_id, req.params.subscription_id)
+}
+
+function getSubscriptions(req) {
+  return subscriptionC.getSubscriptions(req.user)
+  .then(subscriptions => {
+    var subscriptions = subscriptions.map(subscription => {
+      return {
+        "id" : subscription._id,
+        "type" : subscription.type,
+        "name" : subscription.name,
+        "link" : subscription.link,
+        "thumbnail" : subscription.thumbnail
+      }
+    })
+    return {
+      items : subscriptions
+    }
+  })
 }
