@@ -24,12 +24,12 @@ db_container_name = ""
 # FUNCTIONS
 
 def perror(message):
-    print >> sys.stderr, "[ERROR] " + message
+    print("[ERROR] " + message, file=sys.stderr)
     exit(1)
 
 def run_command(cmd):
     if (dry_run):
-        print " ".join(cmd)
+        print(" ".join(cmd))
     else:
         try:
             subprocess.check_call(cmd, stderr=subprocess.STDOUT)
@@ -45,10 +45,10 @@ def count_images(image):
     return int(subprocess.check_output(["wc", "-l"], stdin=docker_images.stdout))
 
 def rebuild_core_container():
-    print "\n# CORE CONTAINER"
+    print("\n# CORE CONTAINER")
 
     # Remove containers
-    print "\n## REMOVE PREVIOUS CONTAINER\n"
+    print("\n## REMOVE PREVIOUS CONTAINER\n")
 
     ps_count = count_containers(core_container_name)
 
@@ -56,7 +56,7 @@ def rebuild_core_container():
         run_command(["sudo", "docker", "rm", "-f", core_container_name])
 
     # Remove images
-    print "\n## REMOVE PREVIOUS IMAGE\n"
+    print("\n## REMOVE PREVIOUS IMAGE\n")
 
     images_count = count_images(core_image_tag)
 
@@ -64,12 +64,12 @@ def rebuild_core_container():
         run_command(["sudo", "docker", "rmi", "-f", core_image_tag])
 
     # Create images
-    print "\n## BUILD NEW IMAGE\n"
+    print("\n## BUILD NEW IMAGE\n")
 
     run_command(["sudo", "docker", "build", "-t", core_image_tag, "."])
 
     # Create containers
-    print "\n## CREATE NEW CONTAINER\n"
+    print("\n## CREATE NEW CONTAINER\n")
 
     if(env == "DEV"):
         run_command(["sudo", "docker", "create", "-it", "--network", "host",
@@ -81,10 +81,10 @@ def rebuild_core_container():
         core_container_name, "-v", "%s:%s" % (config_path, container_config_path), core_image_tag])
 
 def rebuild_db_container():
-    print "\n# DB CONTAINER"
+    print("\n# DB CONTAINER")
 
     # Remove containers
-    print "\n## REMOVE PREVIOUS CONTAINER\n"
+    print("\n## REMOVE PREVIOUS CONTAINER\n")
 
     ps_count = count_containers(db_container_name)
 
@@ -92,7 +92,7 @@ def rebuild_db_container():
         run_command(["sudo", "docker", "rm", "-f", db_container_name])
 
     # Remove images
-    print "\n## REMOVE PREVIOUS IMAGE\n"
+    print("\n## REMOVE PREVIOUS IMAGE\n")
 
     images_count = count_images(db_image_tag)
 
@@ -100,12 +100,12 @@ def rebuild_db_container():
         run_command(["sudo", "docker", "rmi", "-f", db_image_tag])
 
     # Create images
-    print "\n## BUILD NEW IMAGE\n"
+    print("\n## BUILD NEW IMAGE\n")
 
     run_command(["sudo", "docker", "build", "-t", db_image_tag, "./db"])
 
     # Create containers
-    print "\n## CREATE NEW CONTAINER\n"
+    print("\n## CREATE NEW CONTAINER\n")
 
     if(env == "DEV"):
         run_command(["sudo", "docker", "run", "-d", "--network", "host",
@@ -161,8 +161,8 @@ if(env == "DEV"):
     run_command(["ln", "-sfn", "%s/core.env" % (container_config_path,), ".env"])
 
 if (env == "DEV"):
-    print "\n\
+    print("\n\
 Run the following commands:\n\
 sudo docker start -i %s\n\
 npm install\n\
-npm start\n" % (core_container_name,)
+npm start\n" % (core_container_name,))
