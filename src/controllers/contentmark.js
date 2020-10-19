@@ -12,17 +12,17 @@ const feedC = require('../controllers/feed')
 function getContentmarkList (user) {
     return db().collection('contentmarks').find({ user_id: user._id }).toArray()
         .then(contentmarks => {
-            return db().collection('subscriptions').find({}).project({ _id: 1 }).toArray()
-                .then(subIds => {
-                    subIds = subIds.map(subId => subId._id.toString())
+            return db().collection('users').findOne({ _id: user._id })
+                .then(user => {
+                    let subIds = user.subscriptions.map(subId => subId.toString())
 
-                    const categorizedSubsIds =
-        contentmarks.map(contentmark => { return contentmark.subscriptions })
-            .reduce((list1, list2) => { return list1.concat(list2) }, [])
+                    const categorizedSubsIds = contentmarks
+                        .map(contentmark => { return contentmark.subscriptions })
+                        .reduce((list1, list2) => { return list1.concat(list2) }, [])
 
                     subIds = subIds.filter(subId => !categorizedSubsIds.includes(subId))
 
-                    var uncategorized = {
+                    const uncategorized = {
                         _id: ObjectId('000000000000000000000000'),
                         name: 'Uncategorized',
                         subscriptions: subIds
